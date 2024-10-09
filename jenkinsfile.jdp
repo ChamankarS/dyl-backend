@@ -3,13 +3,13 @@ pipeline {
     stages {
         stage('PULL') {
             steps{
-                git branch: 'dev', url: 'https://github.com/shubhamkalsait/dyl-my-backend.git'
+                git branch: 'dev', url: 'https://github.com/ChamankarS/dyl-backend.git'
             }
         }
         stage('BUILD') {
             steps{
-              sh '''docker build . -t shubhamkalsait1/dyl-my-backend:latest
-                    echo "Redhat@123" | docker login --username shubhamkalsait1 --password-stdin
+              sh '''docker build . -t chamankarsahil/dyl-my-backend:latest
+                    echo "Joker@1507" | docker login --username chamankarsahil --password-stdin
                     docker push shubhamkalsait1/dyl-my-backend:latest
                     docker rmi shubhamkalsait1/dyl-my-backend:latest'''
             }
