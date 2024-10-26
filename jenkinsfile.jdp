@@ -15,7 +15,7 @@ pipeline {
         }
         stage('BUILD') {
             steps{
-               withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+               withDockerRegistry(credentialsId: 'docker-cred') {
                     sh '''docker build . -t chamankarsahil/dyl-backend:latest               
                     docker push chamankarsahil/dyl-backend:latest
                     docker rmi chamankarsahil/dyl-backend:latest'''
