@@ -31,8 +31,11 @@
 //         }
 //     }
 // }
- pipeline {
+pipeline {
     agent any
+    environment {
+        KUBECONFIG = credentials('eks-kubeconfig') // Add kubeconfig file as environment variable
+        }
     stages {
         stage('PULL') {
             steps {
@@ -41,34 +44,26 @@
         }
         stage('BUILD') {
             steps {
-                script {
-                    withDockerRegistry(credentialsId: 'docker-cred') {
-                        sh '''
-                            docker build . -t chamankarsahil/dyl-backend:latest
-                            docker push chamankarsahil/dyl-backend:latest
-                            docker rmi chamankarsahil/dyl-backend:latest
-                        '''
-                    }
+                script{
+                withDockerRegistry(credentialsId: 'docker-cred') { // Removed toolName parameter
+                    sh '''
+                        docker build . -t chamankarsahil/dyl-backend:latest
+                        docker push chamankarsahil/dyl-backend:latest
+                        docker rmi chamankarsahil/dyl-backend:latest
+                    '''
                 }
+            }
             }
         }
         stage('DEPLOY') {
-            environment {
-                KUBECONFIG = credentials('eks-kubeconfig') // Add kubeconfig file as environment variable
-            }
             steps {
-                script {
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-cred']]) {
-                        sh '''
-                            aws eks update-kubeconfig --region eu-north-1 --name dyl-cluster
-                            kubectl config current-context
-                            kubectl apply -f ./yaml/
-                        '''
-                    }
-                }
+                sh '''
+                    kubectl config current-context
+                    kubectl apply -f ./yaml/
+                '''
             }
         }
+        }
     }
-}
 
 
