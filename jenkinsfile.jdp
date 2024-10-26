@@ -34,9 +34,7 @@
 
 pipeline {
     agent any
-    tools {
-        dockerTool 'docker' // Ensure 'docker' matches the Docker installation name in Jenkins
-    }
+     
     stages {
         stage('PULL') {
             steps {
