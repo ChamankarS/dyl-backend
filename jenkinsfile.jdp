@@ -8,12 +8,16 @@ pipeline {
         }
         stage('BUILD') {
             steps{
-              sh '''docker build . -t chamankarsahil/dyl-backend:latest
-                    echo "Joker@1507" | docker login --username chamankarsahil --password-stdin
+               withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+                    sh '''docker build . -t chamankarsahil/dyl-backend:latest               
                     docker push chamankarsahil/dyl-backend:latest
                     docker rmi chamankarsahil/dyl-backend:latest'''
+                    }
+                  
+                    // echo "Joker@1507" | docker login --username chamankarsahil --password-stdin
             }
         }
+   
         stage('DEPLOY') {
             steps {
                 sh '''kubectl config current-context
