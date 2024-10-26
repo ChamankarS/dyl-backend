@@ -31,11 +31,44 @@
 //         }
 //     }
 // }
+// pipeline {
+//     agent any
+//     environment {
+//         KUBECONFIG = credentials('eks-kubeconfig') // Add kubeconfig file as environment variable
+//         }
+//     stages {
+//         stage('PULL') {
+//             steps {
+//                 git branch: 'feature', url: 'https://github.com/ChamankarS/dyl-backend.git'
+//             }
+//         }
+//         stage('BUILD') {
+//             steps {
+//                 script{
+//                 withDockerRegistry(credentialsId: 'docker-cred') { // Removed toolName parameter
+//                     sh '''
+//                         docker build . -t chamankarsahil/dyl-backend:latest
+//                         docker push chamankarsahil/dyl-backend:latest
+//                         docker rmi chamankarsahil/dyl-backend:latest
+//                     '''
+//                 }
+//             }
+//             }
+//         }
+//         stage('DEPLOY') {
+//             steps {
+//                 sh '''
+//                     kubectl config current-context
+//                     kubectl apply -f ./yaml/
+//                 '''
+//             }
+//         }
+//         }
+//     }
+
+
 pipeline {
     agent any
-    environment {
-        KUBECONFIG = credentials('eks-kubeconfig') // Add kubeconfig file as environment variable
-        }
     stages {
         stage('PULL') {
             steps {
@@ -44,26 +77,31 @@ pipeline {
         }
         stage('BUILD') {
             steps {
-                script{
-                withDockerRegistry(credentialsId: 'docker-cred') { // Removed toolName parameter
-                    sh '''
-                        docker build . -t chamankarsahil/dyl-backend:latest
-                        docker push chamankarsahil/dyl-backend:latest
-                        docker rmi chamankarsahil/dyl-backend:latest
-                    '''
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                        sh '''
+                            docker build . -t chamankarsahil/dyl-backend:latest
+                            docker push chamankarsahil/dyl-backend:latest
+                            docker rmi chamankarsahil/dyl-backend:latest
+                        '''
+                    }
                 }
-            }
             }
         }
         stage('DEPLOY') {
             steps {
-                sh '''
-                    kubectl config current-context
-                    kubectl apply -f ./yaml/
-                '''
+                script {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-cred']]) {
+                        // Use workspace directory for KUBECONFIG
+                        sh '''
+                            export KUBECONFIG=${env.WORKSPACE}/Kubeconfig
+                            aws eks update-kubeconfig --region eu-north-1 --name dyl-cluster --kubeconfig $KUBECONFIG
+                            kubectl config current-context --kubeconfig $KUBECONFIG
+                            kubectl apply -f ./yaml/ --kubeconfig $KUBECONFIG
+                        '''
+                    }
+                }
             }
         }
-        }
     }
-
-
+}
