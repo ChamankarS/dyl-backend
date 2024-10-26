@@ -57,12 +57,16 @@ pipeline {
                 KUBECONFIG = credentials('eks-kubeconfig') // Add kubeconfig file as environment variable
             }
             steps {
-                sh '''
-                    kubectl config current-context
-                    kubectl apply -f ./yaml/
-                '''
+               script{
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-cred']]) {
+                    sh '''
+                        aws eks update-kubeconfig --region eu-north-1 --name dyl-cluster
+                        kubectl config current-context
+                        kubectl apply -f ./yaml/
+                    '''
+                }
+                }
             }
-        }
         }
     }
 
