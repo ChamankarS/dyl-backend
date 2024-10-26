@@ -1,9 +1,5 @@
 pipeline {
     agent any
-
-    tools {
-        docker 'docker' // Replace 'docker' with the name you configured in Jenkins
-    }
     environment {
         KUBECONFIG_CRED_ID = 'eks-kubeconfig' // ID for the kubeconfig credential
     }
@@ -15,7 +11,7 @@ pipeline {
         }
         stage('BUILD') {
             steps{
-               withDockerRegistry(credentialsId: 'docker-cred') {
+               withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
                     sh '''docker build . -t chamankarsahil/dyl-backend:latest               
                     docker push chamankarsahil/dyl-backend:latest
                     docker rmi chamankarsahil/dyl-backend:latest'''
