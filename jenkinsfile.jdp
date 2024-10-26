@@ -1,5 +1,9 @@
 pipeline {
     agent any
+
+    tools {
+        docker 'docker' // Replace 'docker' with the name you configured in Jenkins
+    }
     environment {
         KUBECONFIG_CRED_ID = 'eks-kubeconfig' // ID for the kubeconfig credential
     }
@@ -23,7 +27,7 @@ pipeline {
    
         stage('DEPLOY') {
             steps {
-                withCredentials([file(credentialsId: 'eks-kubeconfig', variable: 'KUBECONFIG')]) {
+                withCredentials([file(credentialsId: 'KUBECONFIG_CRED_ID', variable: 'KUBECONFIG')]) {
                 sh '''kubectl config current-context
                     kubectl apply -f ./yaml/'''
             }
