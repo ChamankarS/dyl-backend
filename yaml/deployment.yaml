@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: dyl-backend
-          image: shubhamkalsait1/dyl-my-backend:latest
+          image: chamankarsahil/dyl-backend:latest
           ports:
           - containerPort: 8080
             name: java
