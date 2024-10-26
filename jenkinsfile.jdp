@@ -1,32 +1,65 @@
+// pipeline {
+//     agent any
+//     environment {
+//         KUBECONFIG_CRED_ID = 'eks-kubeconfig' // ID for the kubeconfig credential
+//     }
+//     stages {
+//         stage('PULL') {
+//             steps{
+//                 git branch: 'feature', url: 'https://github.com/ChamankarS/dyl-backend.git'
+//             }
+//         }
+//         stage('BUILD') {
+//             steps{
+//                withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+//                     sh '''docker build . -t chamankarsahil/dyl-backend:latest               
+//                     docker push chamankarsahil/dyl-backend:latest
+//                     docker rmi chamankarsahil/dyl-backend:latest'''
+//                     }
+                  
+//                     // echo "Joker@1507" | docker login --username chamankarsahil --password-stdin
+//             }
+//         }
+   
+//         stage('DEPLOY') {
+//             steps {
+//                 withCredentials([file(credentialsId: 'KUBECONFIG_CRED_ID', variable: 'KUBECONFIG')]) {
+//                 sh '''kubectl config current-context
+//                     kubectl apply -f ./yaml/'''
+//             }
+//             }
+//         }
+//     }
+// }
+
 pipeline {
     agent any
-    environment {
-        KUBECONFIG_CRED_ID = 'eks-kubeconfig' // ID for the kubeconfig credential
+    tools {
+        dockerTool 'docker' // Ensure 'docker' matches the Docker installation name in Jenkins
     }
     stages {
         stage('PULL') {
-            steps{
+            steps {
                 git branch: 'feature', url: 'https://github.com/ChamankarS/dyl-backend.git'
             }
         }
         stage('BUILD') {
-            steps{
-               withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                    sh '''docker build . -t chamankarsahil/dyl-backend:latest               
-                    docker push chamankarsahil/dyl-backend:latest
-                    docker rmi chamankarsahil/dyl-backend:latest'''
-                    }
-                  
-                    // echo "Joker@1507" | docker login --username chamankarsahil --password-stdin
+            steps {
+                withDockerRegistry(credentialsId: 'docker-cred') { // Removed toolName parameter
+                    sh '''
+                        docker build . -t chamankarsahil/dyl-backend:latest
+                        docker push chamankarsahil/dyl-backend:latest
+                        docker rmi chamankarsahil/dyl-backend:latest
+                    '''
+                }
             }
         }
-   
         stage('DEPLOY') {
             steps {
-                withCredentials([file(credentialsId: 'KUBECONFIG_CRED_ID', variable: 'KUBECONFIG')]) {
-                sh '''kubectl config current-context
-                    kubectl apply -f ./yaml/'''
-            }
+                sh '''
+                    kubectl config current-context
+                    kubectl apply -f ./yaml/
+                '''
             }
         }
     }
