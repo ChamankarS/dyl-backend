@@ -41,6 +41,7 @@ pipeline {
         }
         stage('BUILD') {
             steps {
+                script{
                 withDockerRegistry(credentialsId: 'docker-cred') { // Removed toolName parameter
                     sh '''
                         docker build . -t chamankarsahil/dyl-backend:latest
@@ -48,6 +49,7 @@ pipeline {
                         docker rmi chamankarsahil/dyl-backend:latest
                     '''
                 }
+            }
             }
         }
         stage('DEPLOY') {
