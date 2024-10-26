@@ -53,12 +53,16 @@ pipeline {
             }
         }
         stage('DEPLOY') {
+            environment {
+                KUBECONFIG = credentials('eks-kubeconfig') // Add kubeconfig file as environment variable
+            }
             steps {
                 sh '''
                     kubectl config current-context
                     kubectl apply -f ./yaml/
                 '''
             }
+        }
         }
     }
 }
